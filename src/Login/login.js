@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './login.css';
-import { BrowserRouter as Link, NavLink, } from "react-router-dom";
+import { NavLink, } from "react-router-dom";
 import firebase from '../firebase'
 
 
