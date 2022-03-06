@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Spinner } from 'react-bootstrap';
 import './diologWindow.css'
-import * as app from "firebase/app";
+import firebase from "firebase/app";
 import Uploader from "../Uploader/uploader"
 
 
@@ -41,7 +41,7 @@ class DiologWindow extends Component {
         this.setState({ loded: false })
 
         //загрузка сообщений
-        await app.database().ref('/messages/' + app.auth().currentUser.uid + '/' + this.props.user.id).limitToLast(10).once('value').then((snapshot) => {
+        await firebase.database().ref('/messages/' + firebase.auth().currentUser.uid + '/' + this.props.user.id).limitToLast(10).once('value').then((snapshot) => {
             snapshot.forEach((element) => {
                 this.state.messages.push(element.val());
 
@@ -61,7 +61,7 @@ class DiologWindow extends Component {
 
 
         //слушатель для загрузки отправленных сообщений
-        app.database().ref('/messages/' + app.auth().currentUser.uid + '/' + this.props.user.id).limitToLast(10).on('child_added', (data) => {
+        firebase.database().ref('/messages/' + firebase.auth().currentUser.uid + '/' + this.props.user.id).limitToLast(10).on('child_added', (data) => {
             if (this.state.messages.findIndex(item => item.messageId === data.val().messageId) === -1) {
                 this.state.messages.push(data.val());
             }
@@ -88,30 +88,30 @@ class DiologWindow extends Component {
         let messageValue = this.state.messageInput;
         this.state.messageInput = '';
         if (messageValue != '' || this.state.file[0] != undefined) {
-            app.database().ref().child('/messages/' + this.props.user.id + '/' + app.auth().currentUser.uid).push({
+            firebase.database().ref().child('/messages/' + this.props.user.id + '/' + firebase.auth().currentUser.uid).push({
                 text: messageValue,
-                sender: app.auth().currentUser.uid,
+                sender: firebase.auth().currentUser.uid,
 
             }).then(async function (messageRef) {
 
 
-                app.database().ref().child('/messages/' + app.auth().currentUser.uid + '/' + this.props.user.id).child(messageRef.key).update({
+                firebase.database().ref().child('/messages/' + firebase.auth().currentUser.uid + '/' + this.props.user.id).child(messageRef.key).update({
                     messageId: messageRef.key,
                     text: messageValue,
-                    sender: app.auth().currentUser.uid,
+                    sender: firebase.auth().currentUser.uid,
                 });
 
-                app.database().ref().child('/messages/' + this.props.user.id + '/' + app.auth().currentUser.uid).child(messageRef.key).update({
+                firebase.database().ref().child('/messages/' + this.props.user.id + '/' + firebase.auth().currentUser.uid).child(messageRef.key).update({
                     messageId: messageRef.key,
 
                 });
                 if (this.state.file[0]) {
                     // 2 - Upload the image to Cloud Storage.
                     var file = this.state.file[0];
-                    var filePath = app.auth().currentUser.uid + '/' + messageRef.key + '/' + file.name;
-                    var uploadTask = app.storage().ref(filePath).put(file);
+                    var filePath = firebase.auth().currentUser.uid + '/' + messageRef.key + '/' + file.name;
+                    var uploadTask = firebase.storage().ref(filePath).put(file);
 
-                    uploadTask.on(app.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+                    uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
                         function (snapshot) {
                             // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
                             var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -148,7 +148,7 @@ class DiologWindow extends Component {
                                     storageUri: uploadTask.snapshot.metadata.fullPath,
                                     fileName: file.name
                                 });
-                                await app.database().ref().child('/messages/' + app.auth().currentUser.uid + '/' + this.props.user.id).child(messageRef.key).update({
+                                await firebase.database().ref().child('/messages/' + firebase.auth().currentUser.uid + '/' + this.props.user.id).child(messageRef.key).update({
                                     fileUrl: url,
                                     storageUri: uploadTask.snapshot.metadata.fullPath,
                                     fileName: file.name
@@ -157,24 +157,24 @@ class DiologWindow extends Component {
 
                             }.bind(this));
                         }.bind(this));
-                    await app.database().ref().child('/messages/' + app.auth().currentUser.uid + '/' + this.props.user.id).child(messageRef.key).update({
+                    await firebase.database().ref().child('/messages/' + firebase.auth().currentUser.uid + '/' + this.props.user.id).child(messageRef.key).update({
                         text: messageValue,
-                        sender: app.auth().currentUser.uid,
+                        sender: firebase.auth().currentUser.uid,
                     })
                 }
             }.bind(this));
-            await app.database().ref().child('/diologs/' + app.auth().currentUser.uid + '/' + this.props.user.id).update({
+            await firebase.database().ref().child('/diologs/' + firebase.auth().currentUser.uid + '/' + this.props.user.id).update({
                 lastMessage: messageValue,
-                timestamp: app.database.ServerValue.TIMESTAMP,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
                 id: this.props.user.id,
                 displayName: this.props.user.name + ' ' + this.props.user.surname,
 
             })
-            await app.database().ref().child('/diologs/' + this.props.user.id + '/' + app.auth().currentUser.uid).update({
+            await firebase.database().ref().child('/diologs/' + this.props.user.id + '/' + firebase.auth().currentUser.uid).update({
                 lastMessage: messageValue,
-                timestamp: app.database.ServerValue.TIMESTAMP,
-                id: app.auth().currentUser.uid,
-                displayName: app.auth().currentUser.displayName,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                id: firebase.auth().currentUser.uid,
+                displayName: firebase.auth().currentUser.displayName,
             })
         }
     }
@@ -192,7 +192,7 @@ class DiologWindow extends Component {
             //объявление нового массива для хранения подгруженных 10 сообщений
             let loadedMessages = [];
 
-            await app.database().ref('/messages/' + app.auth().currentUser.uid + '/' + this.props.user.id).orderByChild('messageId').endAt(this.state.messageCounter).limitToLast(10).once('value').then((snapshot) => {
+            await firebase.database().ref('/messages/' + firebase.auth().currentUser.uid + '/' + this.props.user.id).orderByChild('messageId').endAt(this.state.messageCounter).limitToLast(10).once('value').then((snapshot) => {
                 snapshot.forEach((element) => {
                     if (this.state.messages.findIndex(item => item.messageId === element.val().messageId) === -1) {
                         loadedMessages.push(element.val());
@@ -264,10 +264,10 @@ class DiologWindow extends Component {
 
                     {this.state.messages.map(i =>
                         <div className="message" >
-                            {i.sender === app.auth().currentUser.uid ? <img src={this.props.interlocutor.ProfilePicture} id="userImage" /> : <img src={this.props.user.ProfilePicture} id="userImage" />}
+                            {i.sender === firebase.auth().currentUser.uid ? <img src={this.props.interlocutor.ProfilePicture} id="userImage" /> : <img src={this.props.user.ProfilePicture} id="userImage" />}
 
 
-                            <div className={i.sender === app.auth().currentUser.uid ? 'messageBox--Sender' : 'messageBox'}>
+                            <div className={i.sender === firebase.auth().currentUser.uid ? 'messageBox--Sender' : 'messageBox'}>
                                 <p>{i.text}</p>
                                 {i.fileUrl ? <a href={i.fileUrl} target="_blank">{i.fileName}</a> : <a></a>}
 

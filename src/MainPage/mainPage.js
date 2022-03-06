@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import './mainPage.css';
 import ModalPlus from '../ModalPlus/modalPlus';
 import EditTask from '../EditTask/editTask';
-import * as app from "firebase/app";
-import firebase from '../firebase'
+import firebase from "firebase/app";
+import firebaseMethods from '../firebase'
 import DiologWindow from '../diologWindow/diologWindow';
 import ModalPic from '../ProfilePic/profilepic';
 
@@ -39,34 +39,34 @@ class MainPage extends Component {
 
 
     async componentDidMount() {
-        let userId = app.auth().currentUser.uid;
+        let userId = firebase.auth().currentUser.uid;
         this.timerID = setInterval(
             () => this.time()
             , 1000);
 
         //Загрузка списка задач для пользователя
-        await app.database().ref('tasks/' + userId).once('value').then((snapshot) => {
+        await firebase.database().ref('tasks/' + userId).once('value').then((snapshot) => {
             snapshot.forEach((element) => {
                 this.state.task.push(element.val());
             });
         });
         //загрузка информации о пользователях с которыми есть диалог
-        await app.database().ref('diologs/' + userId).once('value').then((snapshot) => {
+        await firebase.database().ref('diologs/' + userId).once('value').then((snapshot) => {
             snapshot.forEach((element) => {
 
                 this.getProfilePicture(element.val().id)
             });
         })
         //загрузка диологов пользователя
-        app.database().ref('diologs/' + userId).on('child_added', (snapshot) => {
+        firebase.database().ref('diologs/' + userId).on('child_added', (snapshot) => {
             this.state.diologs.push(snapshot.val());
         })
         //Загрузка последнего сообщения которое было отправлено
-        app.database().ref('diologs/' + userId).on('child_changed', (snapshot) => {
+        firebase.database().ref('diologs/' + userId).on('child_changed', (snapshot) => {
             this.state.diologs[this.state.diologs.findIndex(item => item.id === snapshot.val().id)] = snapshot.val()
         })
         //обновление данных о пользователе, если он поменял аватарку
-        app.database().ref('users/').on('child_changed', (snapshot) => {
+        firebase.database().ref('users/').on('child_changed', (snapshot) => {
             this.state.users[this.state.users.findIndex(item => item.id === snapshot.val().id)] = snapshot.val()
         })
 
@@ -77,12 +77,12 @@ class MainPage extends Component {
 
 
         //статус онлайна пользователя
-        var myConnectionsRef = app.database().ref('/users/' + userId + '/connections');
+        var myConnectionsRef = firebase.database().ref('/users/' + userId + '/connections');
 
         // stores the timestamp of my last disconnect (the last time I was seen online)
-        var lastOnlineRef = app.database().ref('/users/' + userId + '/lastOnline');
+        var lastOnlineRef = firebase.database().ref('/users/' + userId + '/lastOnline');
 
-        var connectedRef = app.database().ref('.info/connected');
+        var connectedRef = firebase.database().ref('.info/connected');
         connectedRef.on('value', function (snap) {
             if (snap.val() === true) {
                 // We're connected (or reconnected)! Do anything here that should happen only if online (or on reconnect)
@@ -95,14 +95,14 @@ class MainPage extends Component {
                 myConnectionsRef.set(true);
 
                 // When I disconnect, update the last time I was seen online
-                lastOnlineRef.onDisconnect().set(app.database.ServerValue.TIMESTAMP);
+                lastOnlineRef.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
             }
         });
     }
 
     componentWillUnmount() {
         clearInterval(this.timerID);
-        firebase.logout();
+        firebaseMethods.logout();
     }
 
     //часы на главной странице
@@ -125,7 +125,7 @@ class MainPage extends Component {
         this.state.task.push(value);
 
         //добавляются записи на сервере для текущего пользователя 
-        app.database().ref().child('tasks/' + app.auth().currentUser.uid + '/' + value.id).set({
+        firebase.database().ref().child('tasks/' + firebase.auth().currentUser.uid + '/' + value.id).set({
             label: value.label,
             text: value.text,
             dateOfCreation: value.dateOfCreation,
@@ -139,7 +139,7 @@ class MainPage extends Component {
     logout() {
 
         try {
-            firebase.logout();
+            firebaseMethods.logout();
         } catch (error) {
             alert(error.message)
         }
@@ -165,7 +165,7 @@ class MainPage extends Component {
 
     //удаление заметки
     deleteTask(e) {
-        app.database().ref('tasks/' + app.auth().currentUser.uid + '/' + e.id).remove();
+        firebase.database().ref('tasks/' + firebase.auth().currentUser.uid + '/' + e.id).remove();
         this.state.task.splice(this.state.task.findIndex(item => item.id === e.id), 1);
     }
 
@@ -176,7 +176,7 @@ class MainPage extends Component {
 
         })
 
-        let ref = app.database().ref('users');
+        let ref = firebase.database().ref('users');
         await ref.orderByChild('surname').equalTo(this.state.searchBar).once('value', ((snapshot) => {
             snapshot.forEach((childSnapshot) => {
                 this.state.searchResult.push(childSnapshot.val())
@@ -188,14 +188,14 @@ class MainPage extends Component {
 
     async writeMessage(props) {
         //загуржается информация о пользователе для diologWindow(props)
-        await app.database().ref('users/' + props.id).once('value').then((snapshot) => {
+        await firebase.database().ref('users/' + props.id).once('value').then((snapshot) => {
             this.setState({ userInfo: snapshot.val() })
         });
-        await app.database().ref('users/' + app.auth().currentUser.uid).once('value').then((snapshot) => {
+        await firebase.database().ref('users/' + firebase.auth().currentUser.uid).once('value').then((snapshot) => {
             this.state.users.push(snapshot.val())
         });
         //слушатель изменений информации о пользователе(онлайн)
-        app.database().ref('users/' + props.id).on('value',(data)=>{
+        firebase.database().ref('users/' + props.id).on('value',(data)=>{
             this.setState({ userInfo: data.val() })
         })
         
@@ -216,7 +216,7 @@ class MainPage extends Component {
 
     //получение статуса онлайна пользователей
     onlineStatus(id) {
-        app.database().ref('users').child(id).child('connections').on('value', (snapshot) => {
+        firebase.database().ref('users').child(id).child('connections').on('value', (snapshot) => {
             this.state.diologs[this.state.diologs.findIndex(item => item.id === id)].online = snapshot.val()
 
 
@@ -232,7 +232,7 @@ class MainPage extends Component {
 
     async getProfilePicture(id) {
 
-        await app.database().ref('users/').child(id).once('value').then((snapshot) => {
+        await firebase.database().ref('users/').child(id).once('value').then((snapshot) => {
             this.state.users.push(snapshot.val())
         })
     }
@@ -348,7 +348,7 @@ class MainPage extends Component {
 
                         )}
 
-                        {this.state.isDiologOpen === true && <DiologWindow user={this.state.userInfo} closeWindow={this.closeWindow} interlocutor={this.state.users[this.state.users.findIndex(item => item.id === app.auth().currentUser.uid)]} />}
+                        {this.state.isDiologOpen === true && <DiologWindow user={this.state.userInfo} closeWindow={this.closeWindow} interlocutor={this.state.users[this.state.users.findIndex(item => item.id === firebase.auth().currentUser.uid)]} />}
 
 
 
@@ -361,7 +361,7 @@ class MainPage extends Component {
                         <aside className="right-side">
                             <p id="timer">{this.state.date.toLocaleTimeString()}</p>
                             {/* <p>{this.addZero(this.state.date.getDate())}.{this.addZero(this.state.date.getMonth() + 1)}.{this.state.date.getFullYear()}</p> */}
-                            <p>{firebase.getCurrentUsername()}</p>
+                            <p>{firebaseMethods.getCurrentUsername()}</p>
                             <div><button onClick={this.logout}>Выход</button></div>
                         </aside>
                     </div>

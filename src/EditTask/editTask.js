@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Button, Modal, InputGroup, FormControl } from 'react-bootstrap';
-import * as app from "firebase/app";
+import firebase from "firebase/app";
 
 
 
@@ -57,7 +57,7 @@ class EditTask extends Component {
         this.props.taskState.text = this.state.text;
 
         //Обновление данных на сервере 
-        app.database().ref().child('/tasks/' + app.auth().currentUser.uid + '/'+this.props.taskState.id).update({
+        firebase.database().ref().child('/tasks/' + firebase.auth().currentUser.uid + '/'+this.props.taskState.id).update({
             label: this.state.label,
             text: this.state.text,
         })

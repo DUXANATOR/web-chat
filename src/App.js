@@ -4,7 +4,7 @@ import Login from './Login/login';
 import RegistrForm from './RegisterForm/registerForm';
 import MainPage from './MainPage/mainPage'
 import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
-import * as app from "firebase/app";
+import firebase from 'firebase/app'
 
 
 
@@ -23,7 +23,7 @@ class App extends Component {
   }
 
   authListener() {
-    app.auth().onAuthStateChanged((user) => {
+    firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         this.setState({ user });
       } else {

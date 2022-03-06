@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Modal, InputGroup, FormControl } from 'react-bootstrap';
 
-import * as app from "firebase/app";
+import firebase from "firebase/app";
 
 
 
@@ -35,10 +35,10 @@ class ModalPic extends Component {
    async save() {
         if(this.state.file[0]!=undefined){
             var file = this.state.file[0];
-                    var filePath = '/avatar/' + app.auth().currentUser.uid + '/';
-                    var uploadTask = app.storage().ref(filePath).put(file);
+                    var filePath = '/avatar/' + firebase.auth().currentUser.uid + '/';
+                    var uploadTask = firebase.storage().ref(filePath).put(file);
 
-                    uploadTask.on(app.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+                    uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
                         function (snapshot) {
                             // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
                             var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -69,7 +69,7 @@ class ModalPic extends Component {
                             uploadTask.snapshot.ref.getDownloadURL().then(async function (url) {
                                
                                
-                                await app.database().ref().child('/users/' + app.auth().currentUser.uid).update({
+                                await firebase.database().ref().child('/users/' + firebase.auth().currentUser.uid).update({
                                     ProfilePicture: url,
                                 })
 

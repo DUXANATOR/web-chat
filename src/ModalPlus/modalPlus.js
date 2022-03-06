@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Modal, InputGroup, FormControl } from 'react-bootstrap';
 import './modalPlus.css';
-import * as app from "firebase/app";
+import firebase from "firebase/app";
 
 
 
@@ -50,7 +50,7 @@ class ModalPlus extends Component {
           label: this.state.label,
           text: this.state.text,
           dateOfCreation: String(this.state.date.toLocaleDateString()),
-          id:app.database().ref().child('posts').push().key,
+          id:firebase.database().ref().child('posts').push().key,
         }
       )
     }

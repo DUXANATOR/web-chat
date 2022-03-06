@@ -31,7 +31,7 @@ a{
 .search-string{
     justify-content: center;
     display: flex;
-    background:#F6F8FA;
+    background: red;
     border:1px solid black;
 }
 #searchBar{

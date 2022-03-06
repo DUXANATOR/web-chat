@@ -1,4 +1,4 @@
-import * as app from "firebase/app";
+import firebase from "firebase/app";
 import 'firebase/auth'
 import 'firebase/firebase-firestore'
 import 'firebase/database'
@@ -7,24 +7,24 @@ import 'firebase/storage'
 
 
 
-var firebaseConfig = {
-	apiKey: "AIzaSyARUWpqc0nNXa0kIQiLy6gN9AgXOYawQXQ",
-    authDomain: "web-chat-e36cb.firebaseapp.com",
-    databaseURL: "https://web-chat-e36cb.firebaseio.com",
-    projectId: "web-chat-e36cb",
-    storageBucket: "web-chat-e36cb.appspot.com",
-    messagingSenderId: "1017710627055",
-	appId: "1:1017710627055:web:b7a7c9b0eea502032d731a"
+const firebaseConfig = {
+	apiKey: "AIzaSyDd266FkTvElVSOS9jIM6nUN0qEMx3KTv0",
+	authDomain: "web-chat-a202a.firebaseapp.com",
+	databaseURL: "https://web-chat-a202a-default-rtdb.europe-west1.firebasedatabase.app",
+	projectId: "web-chat-a202a",
+	storageBucket: "web-chat-a202a.appspot.com",
+	messagingSenderId: "1029604711377",
+	appId: "1:1029604711377:web:35b9f9607d3ec0abea9ef0"
 };
 
 
 
 
-class Firebase {
+class firebaseMethods {
 	constructor() {
-		app.initializeApp(firebaseConfig)
-		this.auth = app.auth()
-		this.db = app.firestore()
+		firebase.initializeApp(firebaseConfig)
+		this.auth = firebase.auth()
+		this.db = firebase.firestore()
 	}
 
 	 async  login(email, password) {
@@ -41,24 +41,24 @@ class Firebase {
 		}).catch(function(error){
 			alert(error.message);
         })
-		
-		app.auth().currentUser.updateProfile({
+
+		firebase.auth().currentUser.updateProfile({
 			displayName: name+' '+surname,
-			photoURL: 'https://firebasestorage.googleapis.com/v0/b/web-chat-e36cb.appspot.com/o/avatar%2Fnoavatar.png?alt=media&token=378895c5-1fb7-443f-80ed-65e6c30d4486',
+			photoURL: 'https://firebasestorage.googleapis.com/v0/b/web-chat-a202a.appspot.com/o/noavatar.png?alt=media&token=ffd06bf9-691f-46c3-a065-b0b3069e4c7a',
 		  })
 
-		 return app.database().ref().child('/users/'+app.auth().currentUser.uid).set({
+		 return firebase.database().ref().child('/users/'+firebase.auth().currentUser.uid).set({
 			name: name,
 			surname: surname,
 			email: email,
 			id: this.auth.currentUser.uid,
-			ProfilePicture:'https://firebasestorage.googleapis.com/v0/b/web-chat-e36cb.appspot.com/o/avatar%2Fnoavatar.png?alt=media&token=378895c5-1fb7-443f-80ed-65e6c30d4486',
+			ProfilePicture:'https://firebasestorage.googleapis.com/v0/b/web-chat-a202a.appspot.com/o/noavatar.png?alt=media&token=ffd06bf9-691f-46c3-a065-b0b3069e4c7a',
 		});
 	}
 
 
 	isUserSignedIn() {
-		return app.auth().currentUser;
+		return firebase.auth().currentUser;
 	}
 
 
@@ -79,4 +79,4 @@ class Firebase {
 
 }
 
-export default new Firebase()
+export default new firebaseMethods()
